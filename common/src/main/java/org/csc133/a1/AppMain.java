@@ -20,10 +20,79 @@ public class AppMain extends Lifecycle {
 }
 
 class Game extends Form implements Runnable{
-
-
+    GameWorld gw;
     @Override
     public void run() {
+
+    }
+    public void paint (Graphics g){
+        super.paint(g);
+        gw.draw(g);
+    }
+}
+class GameWorld{
+    public GameWorld(){
+        init();
+    }
+    private void init(){
+
+    }
+    void draw(Graphics g){
+
+    }
+}
+class River{
+    public River(){
+
+    }
+    private void init(){
+
+    }
+    void draw(Graphics g){
+
+    }
+}
+class Helipad{
+    public Helipad(){
+
+    }
+    private void init(){
+
+    }
+    void draw(Graphics g){
+
+    }
+}
+class River{
+    public River(){
+
+    }
+    private void init(){
+
+    }
+    void draw(Graphics g){
+
+    }
+}
+class Fire{
+    public Fire(){
+
+    }
+    private void init(){
+
+    }
+    void draw(Graphics g){
+
+    }
+}
+class Helicopter{
+    public Helicopter(){
+
+    }
+    private void init(){
+
+    }
+    void draw(Graphics g){
 
     }
 }
