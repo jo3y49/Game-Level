@@ -1,12 +1,15 @@
 package org.csc133.a1;
 
 import static com.codename1.ui.CN.*;
+
+import com.codename1.charts.util.ColorUtil;
 import com.codename1.system.Lifecycle;
 import com.codename1.ui.*;
 import com.codename1.ui.layouts.*;
 import com.codename1.io.*;
 import com.codename1.ui.plaf.*;
 import com.codename1.ui.util.Resources;
+import com.codename1.ui.util.UITimer;
 
 import java.awt.event.ActionListener;
 
@@ -23,8 +26,16 @@ public class AppMain extends Lifecycle {
 
 class Game extends Form implements Runnable{
     GameWorld gw;
+
+    final static int DISP_H = Display.getInstance().getDisplayHeight();
+    final static int DISP_W = Display.getInstance().getDisplayWidth();
+
+    public static int getSmallDim() {return Math.min(DISP_H,DISP_W);}
+    public static int getLargeDim() {return Math.max(DISP_H,DISP_W);}
+
     public Game(){
         gw = new GameWorld();
+
         //addKeyListener(-93,(evt) -> );
         //addKeyListener(-94,(evt) -> );
         //addKeyListener(-91,(evt) -> );
@@ -32,11 +43,18 @@ class Game extends Form implements Runnable{
         //addKeyListener('f',(evt) -> );
         //addKeyListener('d',(evt) -> );
         addKeyListener('Q',(evt) -> gw.quit());
+
+        UITimer timer = new UITimer(this);
+        timer.schedule(100,true,this);
+
+        this.getAllStyles().setBgColor(ColorUtil.BLACK);
+        this.show();
     }
     //public void addKeyListener(int KeyCode, ActionListener listener){}
     @Override
     public void run() {
-
+        gw.tick();
+        repaint();
     }
     public void paint (Graphics g){
         super.paint(g);
