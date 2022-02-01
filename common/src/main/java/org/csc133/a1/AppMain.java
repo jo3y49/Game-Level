@@ -53,7 +53,7 @@ class Game extends Form implements Runnable{
     //public void addKeyListener(int KeyCode, ActionListener listener){}
     @Override
     public void run() {
-        gw.tick();
+        //gw.tick();
         repaint();
     }
     public void paint (Graphics g){
@@ -88,17 +88,6 @@ class River{
 }
 class Helipad{
     public Helipad(){
-
-    }
-    private void init(){
-
-    }
-    void draw(Graphics g){
-
-    }
-}
-class River{
-    public River(){
 
     }
     private void init(){
