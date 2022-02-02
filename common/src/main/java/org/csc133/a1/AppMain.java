@@ -41,12 +41,12 @@ class Game extends Form implements Runnable{
         gw = new GameWorld();
 
 
-        /*addKeyListener(-93,(evt) -> );
-        addKeyListener(-94,(evt) -> );
-        addKeyListener(-91,(evt) -> );
-        addKeyListener(-92,(evt) -> );
-        addKeyListener('f',(evt) -> );
-        addKeyListener('d',(evt) -> );*/
+       // addKeyListener(-93,(evt) -> ); //left
+        //addKeyListener(-94,(evt) -> ); //right
+        addKeyListener(-91,(evt) -> gw.move('u')); //up
+        addKeyListener(-92,(evt) -> gw.move('d')); //down
+        //addKeyListener('f',(evt) -> );
+       // addKeyListener('d',(evt) -> );*/
         addKeyListener('Q',(evt) -> gw.quit());
 
         UITimer timer = new UITimer(this);
@@ -105,6 +105,18 @@ class GameWorld{
             fire.grow();
         }
         helicopter.changeFuel(-5);
+        helicopter.move();
+
+    }
+    public void move(char c){
+        switch (c) {
+            case 'u':
+                helicopter.speedUp();
+            break;
+            case 'd':
+                helicopter.speedDown();
+            break;
+        }
     }
 }
 class River{
@@ -192,12 +204,13 @@ class Fire{
 }
 class Helicopter{
     private Point location, lineBase, lineEnd;
-    private int size, length, fuel, water, speed;
+    private int size, length, fuel, water, speed, maxSpeed, direction;
 
     public Helicopter(){
-        speed = 0;
         water = 0;
         fuel = 0;
+        speed = 0;
+        maxSpeed = 10;
         size = Display.getInstance().getDisplayWidth()/28;
         length = size*2+size/2;
         location = new Point(Display.getInstance().getDisplayWidth()/2-size/2,
@@ -211,6 +224,23 @@ class Helicopter{
     }
     public void changeWater(int water){
         this.water += water;
+    }
+    public void speedUp(){
+        if (speed < maxSpeed) speed++;
+    }
+    public void speedDown(){
+        if (speed > 0) speed--;
+    }
+    public void move(){
+        location.setX(location.getX()+((location.getX()-lineEnd.getX())/20*speed));
+        lineBase.setX(lineBase.getX()+((location.getX()-lineEnd.getX())/20*speed));
+        lineEnd.setX(lineEnd.getX()+((location.getX()-lineEnd.getX())/20*speed));
+        location.setY(location.getY()-((location.getY()-lineEnd.getY())/20*speed));
+        lineBase.setY(lineBase.getY()-((location.getY()-lineEnd.getY())/20*speed));
+        lineEnd.setY(lineEnd.getY()-((location.getY()-lineEnd.getY())/20*speed));
+    }
+    public void turn(){
+
     }
 
     void draw(Graphics g){
