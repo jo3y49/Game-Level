@@ -81,9 +81,9 @@ class River{
     private int height, width;
 
     public River(){
-        location = new Point(1,Display.getInstance().getDisplayHeight()/3);
-        height = Display.getInstance().getDisplayHeight()/20;
-        width = Display.getInstance().getDisplayWidth()-2;
+        location = new Point(1,Display.getInstance().getDisplayHeight()/5);
+        height = Display.getInstance().getDisplayHeight()/16;
+        width = Display.getInstance().getDisplayWidth()-8;
     }
     void draw(Graphics g){
         g.setColor(ColorUtil.BLUE);
