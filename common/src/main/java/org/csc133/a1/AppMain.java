@@ -63,17 +63,21 @@ class Game extends Form implements Runnable{
 }
 class GameWorld{
     private River river;
+    private Helipad helipad;
+
     public GameWorld(){
         init();
     }
     private void init(){
         river = new River();
+        helipad = new Helipad();
     }
     public void quit(){
         Display.getInstance().exitApplication();
     }
     void draw(Graphics g){
         river.draw(g);
+        helipad.draw(g);
     }
 }
 class River{
@@ -91,12 +95,23 @@ class River{
     }
 }
 class Helipad{
+    private Point locationS, locationC;
+    private int square, circle;
+
     public Helipad(){
+        square = Display.getInstance().getDisplayWidth()/5;
+        locationS = new Point(Display.getInstance().getDisplayWidth()/2-square/2,
+             Display.getInstance().getDisplayHeight()-Display.getInstance().getDisplayHeight()/5);
+        circle = square-square/5;
+        locationC = new Point(locationS.getX()+square/10,
+                              locationS.getY()+square/10);
 
     }
 
     void draw(Graphics g){
-
+        g.setColor(ColorUtil.GRAY);
+        g.drawRect(locationS.getX(),locationS.getY(),square,square,5);
+        g.drawArc(locationC.getX(),locationC.getY(),circle,circle,0,360);
     }
 }
 class Fire{
