@@ -5,6 +5,7 @@ import static com.codename1.ui.CN.*;
 import com.codename1.charts.util.ColorUtil;
 import com.codename1.system.Lifecycle;
 import com.codename1.ui.*;
+import com.codename1.ui.geom.Point;
 import com.codename1.ui.layouts.*;
 import com.codename1.io.*;
 import com.codename1.ui.plaf.*;
@@ -23,7 +24,6 @@ public class AppMain extends Lifecycle {
         new Game();
     }
 }
-
 class Game extends Form implements Runnable{
     GameWorld gw;
 
@@ -36,12 +36,12 @@ class Game extends Form implements Runnable{
     public Game(){
         gw = new GameWorld();
 
-        //addKeyListener(-93,(evt) -> );
-        //addKeyListener(-94,(evt) -> );
-        //addKeyListener(-91,(evt) -> );
-        //addKeyListener(-92,(evt) -> );
-        //addKeyListener('f',(evt) -> );
-        //addKeyListener('d',(evt) -> );
+        /*addKeyListener(-93,(evt) -> );
+        addKeyListener(-94,(evt) -> );
+        addKeyListener(-91,(evt) -> );
+        addKeyListener(-92,(evt) -> );
+        addKeyListener('f',(evt) -> );
+        addKeyListener('d',(evt) -> );*/
         addKeyListener('Q',(evt) -> gw.quit());
 
         UITimer timer = new UITimer(this);
@@ -62,37 +62,39 @@ class Game extends Form implements Runnable{
     }
 }
 class GameWorld{
+    private River river;
     public GameWorld(){
         init();
     }
     private void init(){
-
+        river = new River();
     }
     public void quit(){
         Display.getInstance().exitApplication();
     }
     void draw(Graphics g){
-
+        river.draw(g);
     }
 }
 class River{
+    private Point location;
+    private int height, width;
+
     public River(){
-
-    }
-    private void init(){
-
+        location = new Point(1,Display.getInstance().getDisplayHeight()/3);
+        height = Display.getInstance().getDisplayHeight()/20;
+        width = Display.getInstance().getDisplayWidth()-2;
     }
     void draw(Graphics g){
-
+        g.setColor(ColorUtil.BLUE);
+        g.drawRect(location.getX(),location.getY(),width,height);
     }
 }
 class Helipad{
     public Helipad(){
 
     }
-    private void init(){
 
-    }
     void draw(Graphics g){
 
     }
@@ -101,9 +103,7 @@ class Fire{
     public Fire(){
 
     }
-    private void init(){
 
-    }
     void draw(Graphics g){
 
     }
@@ -112,9 +112,7 @@ class Helicopter{
     public Helicopter(){
 
     }
-    private void init(){
 
-    }
     void draw(Graphics g){
 
     }
