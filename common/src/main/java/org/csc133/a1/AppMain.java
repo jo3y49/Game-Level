@@ -80,8 +80,10 @@ class GameWorld{
         fires = new ArrayList<>();
         for (int i=0; i<NUMBER_OF_FIRES; i++){
             fires.add(new Fire());
+            fires.get(i).place(i);
         }
         helicopter = new Helicopter();
+        helicopter.changeFuel(3000);
     }
     public void quit(){
         Display.getInstance().exitApplication();
@@ -99,6 +101,7 @@ class GameWorld{
         for(Fire fire : fires){
             fire.grow();
         }
+        helicopter.changeFuel(-5);
     }
 }
 class River{
@@ -106,7 +109,7 @@ class River{
     private int height, width;
 
     public River(){
-        location = new Point(1,Display.getInstance().getDisplayHeight()/5);
+        location = new Point(1,Display.getInstance().getDisplayHeight()/4);
         height = Display.getInstance().getDisplayHeight()/16;
         width = Display.getInstance().getDisplayWidth()-8;
     }
@@ -116,7 +119,7 @@ class River{
     }
 }
 class Helipad{
-    //separate variables for the square and circle make it easier
+    //separated variables for the square and circle to make it easier
     private Point locationS, locationC;
     private int square, circle;
 
@@ -152,6 +155,24 @@ class Fire{
             this.location.setY(location.getY()-growth/2);
         }
     }
+    public void place(int n){
+        switch (n){
+            case 0:
+                this.location = new Point(new Random().nextInt(150)+15,
+                             new Random().nextInt(150)+100);
+            break;
+            case 1:
+                this.location = new Point(new Random().nextInt(150)+
+                                Display.getInstance().getDisplayWidth()/2,
+                             new Random().nextInt(150)+100);
+            break;
+            case 2:
+                this.location = new Point(new Random().nextInt(150)+
+                        Display.getInstance().getDisplayWidth()/2-150,
+                        new Random().nextInt(150)+
+                        Display.getInstance().getDisplayHeight()/3);
+        }
+    }
     void draw(Graphics g){
         g.setColor(ColorUtil.MAGENTA);
         g.fillArc(location.getX(),location.getY(),size,size,0,360);
@@ -162,9 +183,12 @@ class Fire{
 }
 class Helicopter{
     private Point location, lineBase, lineEnd;
-    private int size, length, fuel, water;
+    private int size, length, fuel, water, speed;
 
     public Helicopter(){
+        speed = 0;
+        water = 0;
+        fuel = 0;
         size = Display.getInstance().getDisplayWidth()/28;
         length = size*2+size/2;
         location = new Point(Display.getInstance().getDisplayWidth()/2-size/2,
@@ -173,9 +197,15 @@ class Helicopter{
         lineEnd = new Point(lineBase.getX(),lineBase.getY()-length);
     }
 
+    public void changeFuel(int fuel){
+        this.fuel += fuel;
+    }
+
     void draw(Graphics g){
         g.setColor(ColorUtil.YELLOW);
         g.fillArc(location.getX(),location.getY(),size,size,0,360);
         g.drawLine(lineBase.getX(),lineBase.getY(),lineEnd.getX(),lineEnd.getY());
+        g.drawString("F  : "+fuel,location.getX()+size/2,location.getY()+size*3);
+        g.drawString("W  : "+water,location.getX()+size/2,location.getY()+size*4);
     }
 }
