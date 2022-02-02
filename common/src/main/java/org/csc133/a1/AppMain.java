@@ -106,16 +106,16 @@ class GameWorld {
     }
     public void quit() { Display.getInstance().exitApplication(); }
 
-    public void lose(){
-        if (Dialog.show("Confirm","You ran out of fuel","Quit","Play Again")){
+    public void win(){
+        if(Dialog.show("VICTORY","You Won! your final score is " +
+                helicopter.getFuel(),"Quit","Play Again")){
             quit();
         } else {
             init();
         }
     }
-    public void win(){
-        if(Dialog.show("Confirm","You Won! your final score is " +
-                helicopter.getFuel(),"Quit","Play Again")){
+    public void lose(){
+        if (Dialog.show("FAILURE","You ran out of fuel","Quit","Play Again")){
             quit();
         } else {
             init();
@@ -295,7 +295,12 @@ class Helicopter{
     public int getSpeed() { return speed; }
     public int getFuel() { return fuel; }
 
-    public void drainFuel(int drain) { fuel -= drain + (speed * speed); }
+    public void drainFuel(int drain){
+        fuel -= drain + (speed * speed);
+        if (fuel < 0){
+            fuel = 0;
+        }
+    }
     public void drainWater(){
         if (water < maxWater) {
             water += 100;
