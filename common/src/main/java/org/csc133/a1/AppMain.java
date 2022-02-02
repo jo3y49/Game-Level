@@ -69,6 +69,7 @@ class GameWorld{
     private River river;
     private Helipad helipad;
     private ArrayList<Fire> fires;
+    private Helicopter helicopter;
 
     public GameWorld(){
         init();
@@ -80,6 +81,7 @@ class GameWorld{
         for (int i=0; i<NUMBER_OF_FIRES; i++){
             fires.add(new Fire());
         }
+        helicopter = new Helicopter();
     }
     public void quit(){
         Display.getInstance().exitApplication();
@@ -90,6 +92,7 @@ class GameWorld{
         for(Fire fire : fires){
             fire.draw(g);
         }
+        helicopter.draw(g);
     }
 
     public void tick() {
@@ -158,11 +161,21 @@ class Fire{
     }
 }
 class Helicopter{
-    public Helicopter(){
+    private Point location, lineBase, lineEnd;
+    private int size, length, fuel, water;
 
+    public Helicopter(){
+        size = Display.getInstance().getDisplayWidth()/28;
+        length = size*2+size/2;
+        location = new Point(Display.getInstance().getDisplayWidth()/2-size/2,
+          Display.getInstance().getDisplayHeight()-Display.getInstance().getDisplayHeight()/7-size/2);
+        lineBase = new Point(location.getX()+size/2,location.getY()+size/2);
+        lineEnd = new Point(lineBase.getX(),lineBase.getY()-length);
     }
 
     void draw(Graphics g){
-
+        g.setColor(ColorUtil.YELLOW);
+        g.fillArc(location.getX(),location.getY(),size,size,0,360);
+        g.drawLine(lineBase.getX(),lineBase.getY(),lineEnd.getX(),lineEnd.getY());
     }
 }
