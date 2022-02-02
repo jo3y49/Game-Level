@@ -3,6 +3,8 @@ package org.csc133.a1;
 import static com.codename1.ui.CN.*;
 
 import com.codename1.charts.util.ColorUtil;
+import com.codename1.maps.BoundingBox;
+import com.codename1.maps.Coord;
 import com.codename1.system.Lifecycle;
 import com.codename1.ui.*;
 import com.codename1.ui.geom.Point;
@@ -88,6 +90,7 @@ class GameWorld{
     public void quit(){
         Display.getInstance().exitApplication();
     }
+
     void draw(Graphics g){
         river.draw(g);
         helipad.draw(g);
@@ -107,11 +110,14 @@ class GameWorld{
 class River{
     private Point location;
     private int height, width;
+    private BoundingBox box;
 
     public River(){
         location = new Point(1,Display.getInstance().getDisplayHeight()/4);
         height = Display.getInstance().getDisplayHeight()/16;
         width = Display.getInstance().getDisplayWidth()-8;
+        box = new BoundingBox(new Coord(location.getX(),location.getY()+height),
+                new Coord(location.getX()+width,location.getY()));
     }
     void draw(Graphics g){
         g.setColor(ColorUtil.BLUE);
@@ -142,10 +148,13 @@ class Helipad{
 class Fire{
     private Point location;
     private int size;
+    private BoundingBox box;
 
     public Fire(){
         location = new Point(100,100);
         size = new Random().nextInt(100)+350;
+        box = new BoundingBox(new Coord(location.getX(),location.getY()+size),
+                new Coord(location.getX()+size,location.getY()));
     }
     public void grow(){
         int growth = 6;
@@ -156,7 +165,7 @@ class Fire{
         }
     }
     public void place(int n){
-        switch (n){
+        switch (n){ //case numbers represent the specific fire, puts them where they belong
             case 0:
                 this.location = new Point(new Random().nextInt(150)+15,
                              new Random().nextInt(150)+100);
@@ -199,6 +208,9 @@ class Helicopter{
 
     public void changeFuel(int fuel){
         this.fuel += fuel;
+    }
+    public void changeWater(int water){
+        this.water += water;
     }
 
     void draw(Graphics g){
