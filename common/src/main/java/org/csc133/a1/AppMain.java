@@ -38,6 +38,7 @@ class Game extends Form implements Runnable{
     public Game(){
         gw = new GameWorld();
 
+
         /*addKeyListener(-93,(evt) -> );
         addKeyListener(-94,(evt) -> );
         addKeyListener(-91,(evt) -> );
@@ -52,10 +53,10 @@ class Game extends Form implements Runnable{
         this.getAllStyles().setBgColor(ColorUtil.BLACK);
         this.show();
     }
-    //public void addKeyListener(int KeyCode, ActionListener listener){}
+
     @Override
     public void run() {
-        //gw.tick();
+        gw.tick();
         repaint();
     }
     public void paint (Graphics g){
@@ -90,6 +91,12 @@ class GameWorld{
             fire.draw(g);
         }
     }
+
+    public void tick() {
+        for(Fire fire : fires){
+            fire.grow();
+        }
+    }
 }
 class River{
     private Point location;
@@ -106,6 +113,7 @@ class River{
     }
 }
 class Helipad{
+    //separate variables for the square and circle make it easier
     private Point locationS, locationC;
     private int square, circle;
 
@@ -133,9 +141,20 @@ class Fire{
         location = new Point(100,100);
         size = new Random().nextInt(100)+350;
     }
+    public void grow(){
+        int growth = 6;
+        if (new Random().nextInt(30) == 0){
+            this.size += growth;
+            this.location.setX(location.getX()-growth/2); //keeps it centered
+            this.location.setY(location.getY()-growth/2);
+        }
+    }
     void draw(Graphics g){
         g.setColor(ColorUtil.MAGENTA);
         g.fillArc(location.getX(),location.getY(),size,size,0,360);
+        //TODO: font too small
+        g.drawString(""+size,location.getX()+size,location.getY()+size);
+
     }
 }
 class Helicopter{
