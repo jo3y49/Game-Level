@@ -43,8 +43,8 @@ class Game extends Form implements Runnable{
         gw = new GameWorld();
 
 
-        //addKeyListener(-93,(evt) -> gw.move('l')); //left
-        //addKeyListener(-94,(evt) -> gw.move('r')); //right
+        addKeyListener(-93,(evt) -> gw.move('l')); //left
+        addKeyListener(-94,(evt) -> gw.move('r')); //right
         addKeyListener(-91,(evt) -> gw.move('u')); //up
         addKeyListener(-92,(evt) -> gw.move('d')); //down
         //addKeyListener('f',(evt) -> );
@@ -137,10 +137,10 @@ class GameWorld{
                 helicopter.speedDown();
             break;
             case 'l':
-                //helicopter.changeDirection(-Math.PI/6.0);
+                helicopter.changeDirection(-Math.PI/6.0);
             break;
             case 'r':
-                //helicopter.changeDirection(Math.PI/6.0);
+                helicopter.changeDirection(Math.PI/6.0);
             break;
         }
     }
@@ -250,7 +250,7 @@ class Helicopter{
 
     public void drainWater(Point river){
         if (water < maxWater && (location.getX() < river.getX() &&
-             location.getX()+size > river.getX() && location.getY() <river.getY()
+             location.getX()+size > river.getX() && location.getY() < river.getY()
              && location.getY()+size > river.getY())){
             water += 100;
         }
@@ -269,11 +269,17 @@ class Helicopter{
     public void speedDown(){
         if (speed > 0) speed--;
     }
+    public void changeDirection(double heading){this.heading += heading;}
     public void move(){
+        int movX = (((lineBase.getX()-lineEnd.getX())/2)/20)*speed;
+        location.setX(location.getX()-movX);
+        lineBase.setX(lineBase.getX()-movX);
+        lineEnd.setX(lineEnd.getX()-movX);
 
-        location.setY(location.getY()-(length/20*speed));
-        lineBase.setY(lineBase.getY()-(length/20*speed));
-        lineEnd.setY(lineEnd.getY()-(length/20*speed));
+        int movY = (((lineBase.getY()-lineEnd.getY())/2)/20)*speed;
+        location.setY(location.getY()-movY);
+        lineBase.setY(lineBase.getY()-movY);
+        lineEnd.setY(lineEnd.getY()-movY);
     }
 
     void draw(Graphics g){
