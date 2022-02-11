@@ -79,6 +79,7 @@ class GameWorld{
     private River river;
     private Helipad helipad;
     private ArrayList<Fire> fires;
+    private ArrayList<Fire> deadFires;
     private Helicopter helicopter;
 
     public GameWorld(){
@@ -88,6 +89,7 @@ class GameWorld{
         river = new River();
         helipad = new Helipad();
         fires = new ArrayList<>();
+        deadFires = new ArrayList<>();
         Fire fire1 = new Fire();
         fire1.setLocation(new Point(new Random().nextInt(150)+15,
                                    new Random().nextInt(150)+100));
@@ -132,7 +134,11 @@ class GameWorld{
             fire.grow();
             helicopter.fireWater(fire.getLocation());
             fire.shrink(helicopter.getLocation());
+            if (fire.checkSize()){
+                deadFires.add(fire);
+            }
         }
+        fires.removeAll(deadFires);
         /*for(int n = 0; n < NUMBER_OF_FIRES; n++){
             helicopter.fireWater(fires.get(n).getLocation());
             fires.get(n).shrink(helicopter.getLocation());
@@ -242,6 +248,13 @@ class Fire{
         }
     }
 
+    public boolean checkSize(){
+        if (size < 30){
+            return true;
+        } else {
+            return false;
+        }
+    }
     public void setLocation(Point location){ this.location = location; }
     public Point getLocation() {return location;}
 
