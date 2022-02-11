@@ -311,15 +311,35 @@ class Helicopter{
                 (int) (length * (-Math.cos(this.heading))) + lineBase.getY());
     }
     public void move(){
-        int movX = (((lineBase.getX()-lineEnd.getX())/2)/20)*speed;
-        location.setX(location.getX()-movX);
-        lineBase.setX(lineBase.getX()-movX);
-        lineEnd.setX(lineEnd.getX()-movX);
+        if (location.getX() < 0) {
+            location.setX(size / 2);
+            lineBase.setX(location.getX()+size/2);
+            lineEnd.setX((int) (length * Math.sin(heading)) + lineBase.getX());
+        } else if (location.getX() + size > Display.getInstance().getDisplayWidth()){
+            location.setX(Display.getInstance().getDisplayWidth() - size);
+            lineBase.setX(location.getX()+size/2);
+            lineEnd.setX((int) (length * Math.sin(heading)) + lineBase.getX());
+        } else {
+            int movX = (((lineBase.getX()-lineEnd.getX())/2)/20)*speed;
+            location.setX(location.getX()-movX);
+            lineBase.setX(lineBase.getX()-movX);
+            lineEnd.setX(lineEnd.getX()-movX);
+        }
 
-        int movY = (((lineBase.getY()-lineEnd.getY())/2)/20)*speed;
-        location.setY(location.getY()-movY);
-        lineBase.setY(lineBase.getY()-movY);
-        lineEnd.setY(lineEnd.getY()-movY);
+        if (location.getY() < 0) {
+            location.setY(size / 4);
+            lineBase.setY(location.getY()+size/2);
+            lineEnd.setY((int) (length * (-Math.cos(heading))) + lineBase.getY());
+        } else if (location.getY() + size > Display.getInstance().getDisplayHeight()) {
+            location.setY(Display.getInstance().getDisplayHeight() - size);
+            lineBase.setY(location.getY()+size/2);
+            lineEnd.setY((int) (length * (-Math.cos(heading))) + lineBase.getY());
+        } else {
+            int movY = (((lineBase.getY() - lineEnd.getY()) / 2) / 20) * speed;
+            location.setY(location.getY() - movY);
+            lineBase.setY(lineBase.getY() - movY);
+            lineEnd.setY(lineEnd.getY() - movY);
+        }
     }
 
     void draw(Graphics g){
