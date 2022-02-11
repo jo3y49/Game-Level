@@ -3,6 +3,7 @@
 package org.csc133.a1;
 
 import static com.codename1.ui.CN.*;
+import static org.csc133.a1.Game.font;
 
 import com.codename1.charts.util.ColorUtil;
 import com.codename1.maps.BoundingBox;
@@ -39,6 +40,9 @@ class Game extends Form implements Runnable{
     public static int getSmallDim() {return Math.min(DISP_H,DISP_W);}
     public static int getLargeDim() {return Math.max(DISP_H,DISP_W);}
 
+    public static Font font = Font.createSystemFont
+            (FACE_MONOSPACE, STYLE_BOLD, SIZE_LARGE);
+
     public Game(){
         gw = new GameWorld();
 
@@ -47,8 +51,8 @@ class Game extends Form implements Runnable{
         addKeyListener(-94,(evt) -> gw.move('r')); //right
         addKeyListener(-91,(evt) -> gw.move('u')); //up
         addKeyListener(-92,(evt) -> gw.move('d')); //down
-        //addKeyListener('f',(evt) -> );
-       // addKeyListener('d',(evt) -> );*/
+        addKeyListener('f',(evt) -> gw.checkHose());
+        addKeyListener('d',(evt) -> gw.drain());
         addKeyListener('Q',(evt) -> gw.quit());
 
         UITimer timer = new UITimer(this);
@@ -64,6 +68,7 @@ class Game extends Form implements Runnable{
         repaint();
     }
     public void paint (Graphics g){
+        g.setFont(Font.createSystemFont(FACE_MONOSPACE, STYLE_BOLD, SIZE_LARGE));
         super.paint(g);
         gw.draw(g);
     }
@@ -107,6 +112,7 @@ class GameWorld{
     }
 
     void draw(Graphics g){
+
         river.draw(g);
         helipad.draw(g);
         for(Fire fire : fires){
@@ -116,18 +122,21 @@ class GameWorld{
     }
 
     public void tick() {
-        for(Fire fire : fires){
-            fire.grow();
-        }
+
         helicopter.changeFuel(-5);
         helicopter.move();
-        helicopter.drainWater(river.getLocation());
-        for(int n = 0; n < NUMBER_OF_FIRES; n++){
+        if (river.checkWater(helicopter.getLocation())){
+            helicopter.drainWater();
+        }
+        for(Fire fire : fires){
+            fire.grow();
+            helicopter.fireWater(fire.getLocation());
+            fire.shrink(helicopter.getLocation());
+        }
+        /*for(int n = 0; n < NUMBER_OF_FIRES; n++){
             helicopter.fireWater(fires.get(n).getLocation());
             fires.get(n).shrink(helicopter.getLocation());
-        }
-        //if river.intersect(helicopter.getLocation());
-            //if fires.get(n).intersect(helicopter.getLocation());
+        }*/
     }
     public void move(char c){
         switch (c) {
@@ -145,6 +154,13 @@ class GameWorld{
             break;
         }
     }
+    public void checkHose(){
+        helicopter.fireWater(river.getLocation());
+    }
+
+    public void drain(){
+        helicopter.drainWater();
+    }
 }
 class River{
     private Point location;
@@ -154,6 +170,15 @@ class River{
         location = new Point(1,Display.getInstance().getDisplayHeight()/4);
         height = Display.getInstance().getDisplayHeight()/16;
         width = Display.getInstance().getDisplayWidth()-8;
+    }
+
+    public boolean checkWater(Point heli){
+        if (location.getX() < heli.getX() && location.getX()+width > heli.getX()
+        && location.getY() < heli.getY() && location.getY()+height > heli.getY()){
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public Point getLocation() {return location;}
@@ -209,12 +234,12 @@ class Fire{
     }
 
     public void shrink(Point heli){
-        /*if (location.getX() < heli.getX() && heli.getX()+size > heli.getX()
-        && location.getY() < heli.getY() && heli.getY()+size > heli.getY()){
+        if (location.getX() < heli.getX() && location.getX()+size > heli.getX()
+        && location.getY() < heli.getY() && location.getY()+size > heli.getY()){
             this.size -= growth;
             this.location.setX(location.getX()+growth/2); //keeps it centered
             this.location.setY(location.getY()+growth/2);
-        }*/
+        }
     }
 
     public void setLocation(Point location){ this.location = location; }
@@ -223,9 +248,7 @@ class Fire{
     void draw(Graphics g){
         g.setColor(ColorUtil.MAGENTA);
         g.fillArc(location.getX(),location.getY(),size,size,0,360);
-        //TODO: font too small
         g.drawString(""+size,location.getX()+size,location.getY()+size);
-
     }
 }
 class Helicopter{
@@ -260,10 +283,8 @@ class Helicopter{
         this.fuel += fuel;
     }
 
-    public void drainWater(Point river){
-        if (water < maxWater && (location.getX() < river.getX() &&
-             location.getX()+size > river.getX() && location.getY() < river.getY()
-             && location.getY()+size > river.getY())){
+    public void drainWater(){
+        if (water < maxWater) {
             water += 100;
         }
     }
