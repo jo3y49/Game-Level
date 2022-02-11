@@ -165,7 +165,7 @@ class River{
 }
 class Helipad{
     //separated variables for the square and circle to make it easier
-    private Point locationS, locationC;
+    private Point locationS, locationC, center;
     private int square, circle;
 
     public Helipad(){
@@ -176,11 +176,13 @@ class Helipad{
         circle = square-square/5;
         locationC = new Point(locationS.getX()+square/10,
                               locationS.getY()+square/10);
+        center = new Point(locationC.getX()+circle/2,
+                           locationC.getY()+circle/2);
 
     }
 
     public Point getCenter(){
-        return new Point(locationC.getX(),locationC.getY()/2);
+        return center;
     }
 
     void draw(Graphics g){
@@ -247,9 +249,9 @@ class Helicopter{
 
     public Point getLocation(){return location;}
     public void initLocation(Point location){
-        init = location;
-        this.location = location;
-        lineBase = new Point(location.getX()+size/2,location.getY()+size/2);
+        init = new Point(location.getX()-size/2,location.getY());
+        this.location = init;
+        lineBase = new Point(this.location.getX()+size/2,this.location.getY()+size/2);
         lineEnd = new Point((int) (length * Math.sin(heading)) + lineBase.getX(),
                 (int) (length * (-Math.cos(heading))) + lineBase.getY());
     }
