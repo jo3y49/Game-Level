@@ -104,8 +104,7 @@ class GameWorld{
                         new Random().nextInt(150)+
                         Display.getInstance().getDisplayHeight()/3));
         fires.add(fire1); fires.add(fire2); fires.add(fire3);
-        helicopter = new Helicopter();
-        helicopter.initLocation(helipad.getCenter());
+        helicopter = new Helicopter(helipad.getCenter());
         helicopter.changeFuel(3000);
         drink = false;
     }
@@ -139,10 +138,6 @@ class GameWorld{
             }
         }
         fires.removeAll(deadFires);
-        /*for(int n = 0; n < NUMBER_OF_FIRES; n++){
-            helicopter.fireWater(fires.get(n).getLocation());
-            fires.get(n).shrink(helicopter.getLocation());
-        }*/
     }
     public void move(char c){
         switch (c) {
@@ -269,7 +264,7 @@ class Helicopter{
     private int size, length, fuel, water, speed, maxSpeed, maxWater;
     private double heading;
 
-    public Helicopter(){
+    public Helicopter(Point helipad){
         water = 0;
         fuel = 0;
         speed = 0;
@@ -277,20 +272,15 @@ class Helicopter{
         maxWater = 1000;
         heading = 0.0;
         size = Display.getInstance().getDisplayWidth()/28;
+        init = new Point(helipad.getX()-size/2,helipad.getY());
         length = size*2+size/2;
-        location = new Point(0,0);
-        lineBase = new Point(0,0);
-        lineEnd = new Point(0,0);
-    }
-
-    public Point getLocation(){return location;}
-    public void initLocation(Point location){
-        init = new Point(location.getX()-size/2,location.getY());
-        this.location = init;
-        lineBase = new Point(this.location.getX()+size/2,this.location.getY()+size/2);
+        location = init;
+        lineBase = new Point(location.getX()+size/2,location.getY()+size/2);
         lineEnd = new Point((int) (length * Math.sin(heading)) + lineBase.getX(),
                 (int) (length * (-Math.cos(heading))) + lineBase.getY());
     }
+
+    public Point getLocation(){return location;}
 
     public void changeFuel(int fuel){
         this.fuel += fuel;
