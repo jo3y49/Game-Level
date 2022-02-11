@@ -3,7 +3,6 @@
 package org.csc133.a1;
 
 import static com.codename1.ui.CN.*;
-import static org.csc133.a1.Game.font;
 
 import com.codename1.charts.util.ColorUtil;
 import com.codename1.maps.BoundingBox;
@@ -40,12 +39,8 @@ class Game extends Form implements Runnable{
     public static int getSmallDim() {return Math.min(DISP_H,DISP_W);}
     public static int getLargeDim() {return Math.max(DISP_H,DISP_W);}
 
-    public static Font font = Font.createSystemFont
-            (FACE_MONOSPACE, STYLE_BOLD, SIZE_LARGE);
-
     public Game(){
         gw = new GameWorld();
-
 
         addKeyListener(-93,(evt) -> gw.move('l')); //left
         addKeyListener(-94,(evt) -> gw.move('r')); //right
@@ -68,14 +63,12 @@ class Game extends Form implements Runnable{
         repaint();
     }
     public void paint (Graphics g){
-        g.setFont(Font.createSystemFont(FACE_MONOSPACE, STYLE_BOLD, SIZE_LARGE));
         super.paint(g);
         gw.draw(g);
     }
 }
 class GameWorld{
     final int NUMBER_OF_FIRES = 3;
-    private boolean drink;
     private River river;
     private Helipad helipad;
     private ArrayList<Fire> fires;
@@ -100,20 +93,19 @@ class GameWorld{
                         new Random().nextInt(150)+100));
         Fire fire3 = new Fire();
         fire3.setLocation(new Point(new Random().nextInt(150)+
-                        Display.getInstance().getDisplayWidth()/2-150,
-                        new Random().nextInt(150)+
-                        Display.getInstance().getDisplayHeight()/3));
+               Display.getInstance().getDisplayWidth()/2-150,
+               new Random().nextInt(150)+
+               Display.getInstance().getDisplayHeight()/3));
         fires.add(fire1); fires.add(fire2); fires.add(fire3);
         helicopter = new Helicopter(helipad.getCenter());
         helicopter.changeFuel(3000);
-        drink = false;
     }
     public void quit(){
         Display.getInstance().exitApplication();
     }
 
     void draw(Graphics g){
-
+        g.setFont(Font.createSystemFont(FACE_MONOSPACE, STYLE_BOLD, SIZE_LARGE));
         river.draw(g);
         helipad.draw(g);
         for(Fire fire : fires){
@@ -168,9 +160,9 @@ class River{
     private int height, width;
 
     public River(){
-        location = new Point(1,Display.getInstance().getDisplayHeight()/4);
-        height = Display.getInstance().getDisplayHeight()/16;
-        width = Display.getInstance().getDisplayWidth()-8;
+        location = new Point(Display.getInstance().getDisplayWidth()/100,Display.getInstance().getDisplayHeight()/4);
+        height = Display.getInstance().getDisplayHeight()/12;
+        width = Display.getInstance().getDisplayWidth()-location.getX()*2;
     }
 
     public boolean checkWater(Point heli){
