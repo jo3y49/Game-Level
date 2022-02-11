@@ -324,7 +324,7 @@ class Helicopter{
         g.fillArc(location.getX(),location.getY(),size,size,0,360);
         g.drawLine(lineBase.getX(),lineBase.getY(),lineEnd.getX(),lineEnd.getY());
 
-        g.drawString("F  : "+fuel,location.getX()+size/2,location.getY()+size*3);
-        g.drawString("W  : "+water,location.getX()+size/2,location.getY()+size*4);
+        g.drawString("F  : "+fuel,location.getX()+size/2,location.getY()+size*2);
+        g.drawString("W  : "+water,location.getX()+size/2,location.getY()+size*3);
     }
 }
