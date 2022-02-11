@@ -98,6 +98,7 @@ class GameWorld{
                         Display.getInstance().getDisplayHeight()/3));
         fires.add(fire1); fires.add(fire2); fires.add(fire3);
         helicopter = new Helicopter();
+        helicopter.initLocation(helipad.getCenter());
         helicopter.changeFuel(3000);
         drink = false;
     }
@@ -178,6 +179,10 @@ class Helipad{
 
     }
 
+    public Point getCenter(){
+        return new Point(locationC.getX(),locationC.getY()/2);
+    }
+
     void draw(Graphics g){
         g.setColor(ColorUtil.GRAY);
         g.drawRect(locationS.getX(),locationS.getY(),square,square,5);
@@ -222,7 +227,7 @@ class Fire{
     }
 }
 class Helicopter{
-    private Point location, lineBase, lineEnd;
+    private Point init, location, lineBase, lineEnd;
     private int size, length, fuel, water, speed, maxSpeed, maxWater;
     private double heading;
 
@@ -235,15 +240,20 @@ class Helicopter{
         heading = 0.0;
         size = Display.getInstance().getDisplayWidth()/28;
         length = size*2+size/2;
-        location = new Point(Display.getInstance().getDisplayWidth()/2-size/2,
-                             Display.getInstance().getDisplayHeight()-
-                                Display.getInstance().getDisplayHeight()/7);
+        location = new Point(0,0);
+        lineBase = new Point(0,0);
+        lineEnd = new Point(0,0);
+    }
+
+    public Point getLocation(){return location;}
+    public void initLocation(Point location){
+        init = location;
+        this.location = location;
         lineBase = new Point(location.getX()+size/2,location.getY()+size/2);
         lineEnd = new Point((int) (length * Math.sin(heading)) + lineBase.getX(),
                 (int) (length * (-Math.cos(heading))) + lineBase.getY());
     }
 
-    public Point getLocation(){return location;}
     public void changeFuel(int fuel){
         this.fuel += fuel;
     }
@@ -269,7 +279,11 @@ class Helicopter{
     public void speedDown(){
         if (speed > 0) speed--;
     }
-    public void changeDirection(double heading){this.heading += heading;}
+    public void changeDirection(double heading){
+        this.heading += heading;
+        lineEnd = new Point((int) (length * Math.sin(this.heading)) + lineBase.getX(),
+                (int) (length * (-Math.cos(this.heading))) + lineBase.getY());
+    }
     public void move(){
         int movX = (((lineBase.getX()-lineEnd.getX())/2)/20)*speed;
         location.setX(location.getX()-movX);
