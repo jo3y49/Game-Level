@@ -93,7 +93,7 @@ class GameWorld{
                         new Random().nextInt(150)+100));
         Fire fire3 = new Fire();
         fire3.setLocation(new Point(new Random().nextInt(150)+
-               Display.getInstance().getDisplayWidth()/2-150,
+               Display.getInstance().getDisplayWidth()/3,
                new Random().nextInt(150)+
                Display.getInstance().getDisplayHeight()/3));
         fires.add(fire1); fires.add(fire2); fires.add(fire3);
@@ -116,7 +116,7 @@ class GameWorld{
 
     public void tick() {
 
-        helicopter.changeFuel(-5);
+
         helicopter.move();
         if (river.checkWater(helicopter.getLocation())){
             helicopter.drainWater();
@@ -130,6 +130,10 @@ class GameWorld{
             }
         }
         fires.removeAll(deadFires);
+        helicopter.changeFuel(-5);
+        if (helicopter.checkFuel()){
+
+        }
     }
     public void move(char c){
         switch (c) {
@@ -187,15 +191,15 @@ class Helipad{
     private int square, circle;
 
     public Helipad(){
-        square = Display.getInstance().getDisplayWidth()/5;
         locationS = new Point(Display.getInstance().getDisplayWidth()/2-
-                     square/2,Display.getInstance().getDisplayHeight()-
-                            Display.getInstance().getDisplayHeight()/5);
+                Display.getInstance().getDisplayWidth()/20,Display.getInstance().getDisplayHeight()-
+                Display.getInstance().getDisplayHeight()/5);
+        square = Display.getInstance().getDisplayWidth()-locationS.getX()*2;
         circle = square-square/5;
         locationC = new Point(locationS.getX()+square/10,
                               locationS.getY()+square/10);
         center = new Point(locationC.getX()+circle/2,
-                           locationC.getY()+circle/2);
+                           locationC.getY()+circle/3);
 
     }
 
@@ -215,7 +219,7 @@ class Fire{
 
     public Fire(){
         location = new Point(100,100);
-        size = new Random().nextInt(100)+350;
+        size = new Random().nextInt(100)+300;
         growth = 6;
     }
     public void grow(){
@@ -263,7 +267,7 @@ class Helicopter{
         maxSpeed = 10;
         maxWater = 1000;
         heading = 0.0;
-        size = Display.getInstance().getDisplayWidth()/28;
+        size = Display.getInstance().getDisplayWidth()/35;
         init = new Point(helipad.getX()-size/2,helipad.getY());
         length = size*2+size/2;
         location = init;
@@ -276,6 +280,12 @@ class Helicopter{
 
     public void changeFuel(int fuel){
         this.fuel += fuel;
+    }
+    public boolean checkFuel(){
+        if (fuel <= 0)
+            return true;
+        else
+            return false;
     }
 
     public void drainWater(){
