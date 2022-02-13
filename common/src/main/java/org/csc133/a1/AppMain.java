@@ -97,7 +97,7 @@ class GameWorld{
                         Display.getInstance().getDisplayHeight()/3));
         fires.add(fire1); fires.add(fire2); fires.add(fire3);
         helicopter = new Helicopter(helipad.getCenter());
-        helicopter.setFuel(3000);
+        helicopter.setFuel(30000);
     }
     public void quit(){
         Display.getInstance().exitApplication();
@@ -115,21 +115,19 @@ class GameWorld{
 
     public void tick() {
         helicopter.move();
-        if (river.checkDrain(helicopter.getHose()) && drain){
+        if (river.checkDrain(helicopter.getCenter()) && drain){
             helicopter.drainWater();
         } else {
             drain = false;
         }
         for(Fire fire : fires){
-
-            fire.grow();
             if (fire.checkSize()){
                 deadFires.add(fire);
             }
-
+            fire.grow();
         }
         fires.removeAll(deadFires);
-        helicopter.changeFuel(-5);
+        helicopter.drainFuel(-5);
         if (helicopter.checkFuel()){
 
         }
@@ -152,7 +150,9 @@ class GameWorld{
     }
     public void checkFire() {
         for (Fire fire : fires) {
-            helicopter.fireWater(fire.shrink(helicopter.getHose(), helicopter.getWater(), helicopter.getSpeed()));
+            if (helicopter.getWater() > 0) {
+                helicopter.fireWater(fire.shrink(helicopter.getCenter(), helicopter.getWater(), helicopter.getSpeed()));
+            }
         }
         drain = false;
     }
@@ -166,7 +166,7 @@ class River{
     private int height, width;
 
     public River(){
-        location = new Point(Display.getInstance().getDisplayWidth()/100,Display.getInstance().getDisplayHeight()/4);
+        location = new Point(Display.getInstance().getDisplayWidth()/100,Display.getInstance().getDisplayHeight()/3);
         height = Display.getInstance().getDisplayHeight()/12;
         width = Display.getInstance().getDisplayWidth()-location.getX()*2;
     }
@@ -201,7 +201,7 @@ class Helipad{
         locationC = new Point(locationS.getX()+square/10,
                               locationS.getY()+square/10);
         center = new Point(locationC.getX()+circle/2,
-                           locationC.getY()+circle/3);
+                           locationC.getY()+circle/2);
 
     }
 
@@ -235,9 +235,14 @@ class Fire{
     }
     //todo pass water, return to reduce water
     public int shrink(Point heli, int water, int speed){
-        int shrinkFactor = water/10;
-        if (water > 0 && speed <= 2 && location.getX() < heli.getX() && location.getX()+size > heli.getX()
-        && location.getY() < heli.getY() && location.getY()+size > heli.getY()){
+        boolean close = false; //detects if the helicopter is close to a small fire
+        if (size < 30 && (Math.abs(heli.getX() - location.getX()) < 20 ||
+                (Math.abs(heli.getY()) - location.getY()) < 20)){
+            close = true;
+        }
+        if (speed <= 2 && (location.getX() < heli.getX() && location.getX()+size > heli.getX()
+        && location.getY() < heli.getY() && location.getY()+size > heli.getY() || close)){
+            int shrinkFactor = water/10;
             if (size > shrinkFactor) {
                 size -= shrinkFactor;
             } else {
@@ -252,7 +257,7 @@ class Fire{
     }
 
     public boolean checkSize(){
-        if (size < 30){
+        if (size == 0){
             return true;
         } else {
             return false;
@@ -267,7 +272,7 @@ class Fire{
     }
 }
 class Helicopter{
-    private Point init, location, lineBase, lineEnd;
+    private Point init, location, center, lineEnd;
     private int size, length, fuel, water, speed, maxSpeed, maxWater;
     private double heading;
 
@@ -278,17 +283,17 @@ class Helicopter{
         maxSpeed = 10;
         maxWater = 1000;
         heading = 0.0;
-        size = Display.getInstance().getDisplayWidth()/35;
-        init = new Point(helipad.getX()-size/2,helipad.getY());
-        length = size*2+size/2;
+        size = Display.getInstance().getDisplayWidth()/40;
+        init = new Point(helipad.getX()-size/2,helipad.getY()-size/3);
+        length = size*2;
         location = init;
-        lineBase = new Point(location.getX()+size/2,location.getY()+size/2);
-        lineEnd = new Point((int) (length * Math.sin(heading)) + lineBase.getX(),
-                (int) (length * (-Math.cos(heading))) + lineBase.getY());
+        center = new Point(location.getX()+size/2,location.getY()+size/2);
+        lineEnd = new Point((int) (length * Math.sin(heading)) + center.getX(),
+                (int) (length * (-Math.cos(heading))) + center.getY());
     }
 
     public Point getLocation(){return location;}
-    public Point getHose(){return lineEnd;}
+    public Point getCenter(){return center;}
     public int getWater(){return water;}
     public int getSpeed(){return speed;}
 
@@ -301,6 +306,10 @@ class Helicopter{
             return true;
         else
             return false;
+    }
+
+    public void drainFuel(int drain){
+        fuel += drain * (speed + 1);
     }
 
     public void drainWater(){
@@ -320,37 +329,37 @@ class Helicopter{
     }
     public void changeDirection(double heading){
         this.heading += heading;
-        lineEnd = new Point((int) (length * Math.sin(this.heading)) + lineBase.getX(),
-                (int) (length * (-Math.cos(this.heading))) + lineBase.getY());
+        lineEnd = new Point((int) (length * Math.sin(this.heading)) + center.getX(),
+                (int) (length * (-Math.cos(this.heading))) + center.getY());
     }
     public void move(){
         if (location.getX() < 0) {
             location.setX(size / 2);
-            lineBase.setX(location.getX()+size/2);
-            lineEnd.setX((int) (length * Math.sin(heading)) + lineBase.getX());
+            center.setX(location.getX()+size/2);
+            lineEnd.setX((int) (length * Math.sin(heading)) + center.getX());
         } else if (location.getX() + size > Display.getInstance().getDisplayWidth()){
             location.setX(Display.getInstance().getDisplayWidth() - size);
-            lineBase.setX(location.getX()+size/2);
-            lineEnd.setX((int) (length * Math.sin(heading)) + lineBase.getX());
+            center.setX(location.getX()+size/2);
+            lineEnd.setX((int) (length * Math.sin(heading)) + center.getX());
         } else {
-            int movX = (((lineBase.getX()-lineEnd.getX())/2)/20)*speed;
+            int movX = (((center.getX()-lineEnd.getX())/40)*speed);
             location.setX(location.getX()-movX);
-            lineBase.setX(lineBase.getX()-movX);
+            center.setX(center.getX()-movX);
             lineEnd.setX(lineEnd.getX()-movX);
         }
 
         if (location.getY() < 0) {
             location.setY(size / 4);
-            lineBase.setY(location.getY()+size/2);
-            lineEnd.setY((int) (length * (-Math.cos(heading))) + lineBase.getY());
+            center.setY(location.getY()+size/2);
+            lineEnd.setY((int) (length * (-Math.cos(heading))) + center.getY());
         } else if (location.getY() + size > Display.getInstance().getDisplayHeight()) {
             location.setY(Display.getInstance().getDisplayHeight() - size);
-            lineBase.setY(location.getY()+size/2);
-            lineEnd.setY((int) (length * (-Math.cos(heading))) + lineBase.getY());
+            center.setY(location.getY()+size/2);
+            lineEnd.setY((int) (length * (-Math.cos(heading))) + center.getY());
         } else {
-            int movY = (((lineBase.getY() - lineEnd.getY()) / 2) / 20) * speed;
+            int movY = (((center.getY() - lineEnd.getY()) / 40) * speed);
             location.setY(location.getY() - movY);
-            lineBase.setY(lineBase.getY() - movY);
+            center.setY(center.getY() - movY);
             lineEnd.setY(lineEnd.getY() - movY);
         }
     }
@@ -358,7 +367,7 @@ class Helicopter{
     void draw(Graphics g){
         g.setColor(ColorUtil.YELLOW);
         g.fillArc(location.getX(),location.getY(),size,size,0,360);
-        g.drawLine(lineBase.getX(),lineBase.getY(),lineEnd.getX(),lineEnd.getY());
+        g.drawLine(center.getX(),center.getY(),lineEnd.getX(),lineEnd.getY());
 
         g.drawString("F  : "+fuel,location.getX()+size/2,location.getY()+size*2);
         g.drawString("W  : "+water,location.getX()+size/2,location.getY()+size*3);
