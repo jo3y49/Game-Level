@@ -1,2 +1,7 @@
+org\csc133\a1\River.class
+org\csc133\a1\GameWorld.class
+org\csc133\a1\Helipad.class
+org\csc133\a1\Fire.class
+org\csc133\a1\Helicopter.class
 org\csc133\a1\AppMain.class
 org\csc133\a1\Game.class
