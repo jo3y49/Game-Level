@@ -46,7 +46,7 @@ class Game extends Form implements Runnable{
         addKeyListener(-94,(evt) -> gw.move('r')); //right
         addKeyListener(-91,(evt) -> gw.move('u')); //up
         addKeyListener(-92,(evt) -> gw.move('d')); //down
-        addKeyListener('f',(evt) -> gw.checkHose());
+        addKeyListener('f',(evt) -> gw.checkFire());
         addKeyListener('d',(evt) -> gw.drain());
         addKeyListener('Q',(evt) -> gw.quit());
 
@@ -69,6 +69,7 @@ class Game extends Form implements Runnable{
 }
 class GameWorld{
     final int NUMBER_OF_FIRES = 3;
+    private boolean drain = false;
     private River river;
     private Helipad helipad;
     private ArrayList<Fire> fires;
@@ -96,7 +97,7 @@ class GameWorld{
                         Display.getInstance().getDisplayHeight()/3));
         fires.add(fire1); fires.add(fire2); fires.add(fire3);
         helicopter = new Helicopter(helipad.getCenter());
-        helicopter.changeFuel(3000);
+        helicopter.setFuel(3000);
     }
     public void quit(){
         Display.getInstance().exitApplication();
@@ -113,19 +114,19 @@ class GameWorld{
     }
 
     public void tick() {
-
-
         helicopter.move();
-        if (river.checkWater(helicopter.getLocation())){
+        if (river.checkDrain(helicopter.getHose()) && drain){
             helicopter.drainWater();
+        } else {
+            drain = false;
         }
         for(Fire fire : fires){
+
             fire.grow();
-            helicopter.fireWater(fire.getLocation());
-            fire.shrink(helicopter.getLocation());
             if (fire.checkSize()){
                 deadFires.add(fire);
             }
+
         }
         fires.removeAll(deadFires);
         helicopter.changeFuel(-5);
@@ -149,12 +150,14 @@ class GameWorld{
             break;
         }
     }
-    public void checkHose(){
-        helicopter.fireWater(river.getLocation());
+    public void checkFire() {
+        for (Fire fire : fires) {
+            helicopter.fireWater(fire.shrink(helicopter.getHose(), helicopter.getWater(), helicopter.getSpeed()));
+        }
     }
 
     public void drain(){
-        helicopter.drainWater();
+        drain = true;
     }
 }
 class River{
@@ -167,7 +170,7 @@ class River{
         width = Display.getInstance().getDisplayWidth()-location.getX()*2;
     }
 
-    public boolean checkWater(Point heli){
+    public boolean checkDrain(Point heli){
         if (location.getX() < heli.getX() && location.getX()+width > heli.getX()
         && location.getY() < heli.getY() && location.getY()+height > heli.getY()){
             return true;
@@ -221,19 +224,28 @@ class Fire{
         growth = 6;
     }
     public void grow(){
-        if (new Random().nextInt(30) == 0){
-            size += growth;
-            location.setX(location.getX()-growth/2); //keeps it centered
-            location.setY(location.getY()-growth/2);
+        if (size > 0) {
+            if (new Random().nextInt(30) == 0) {
+                size += growth;
+                location.setX(location.getX() - growth / 2); //keeps it centered
+                location.setY(location.getY() - growth / 2);
+            }
         }
     }
     //todo pass water, return to reduce water
-    public void shrink(Point heli){
-        if (location.getX() < heli.getX() && location.getX()+size > heli.getX()
+    public int shrink(Point heli, int water, int speed){
+        if (water > 0 && speed <= 2 && location.getX() < heli.getX() && location.getX()+size > heli.getX()
         && location.getY() < heli.getY() && location.getY()+size > heli.getY()){
-            size -= growth;
-            location.setX(location.getX()+growth/2); //keeps it centered
-            location.setY(location.getY()+growth/2);
+            if (size > water/4) {
+                size -= water/4;
+            } else {
+                size = 0;
+            }
+            location.setX(location.getX()+water/8); //keeps it centered
+            location.setY(location.getY()+water/8);
+            return 0;
+        } else {
+            return water;
         }
     }
 
@@ -259,7 +271,7 @@ class Helicopter{
 
     public Helicopter(Point helipad){
         water = 0;
-        fuel = 0;
+        fuel = 100;
         speed = 0;
         maxSpeed = 10;
         maxWater = 1000;
@@ -274,10 +286,14 @@ class Helicopter{
     }
 
     public Point getLocation(){return location;}
+    public Point getHose(){return lineEnd;}
+    public int getWater(){return water;}
+    public int getSpeed(){return speed;}
 
     public void changeFuel(int fuel){
         this.fuel += fuel;
     }
+    public void setFuel(int fuel){this.fuel = fuel;}
     public boolean checkFuel(){
         if (fuel <= 0)
             return true;
@@ -286,23 +302,19 @@ class Helicopter{
     }
 
     public void drainWater(){
-        if (water < maxWater) {
+        if (water < maxWater && speed <=2) {
             water += 100;
         }
     }
-    public void fireWater(Point fire){
-        if (water > 0 && (location.getX() < fire.getX() &&
-              location.getX()+size > fire.getX() && location.getY() < fire.getY()
-              && location.getY()+size > fire.getY())){
-             water -= 100;
-        }
+    public void fireWater(int water){
+        this.water = water;
     }
 
     public void speedUp(){
-        if (speed < maxSpeed) speed++;
+        if (speed < maxSpeed) speed+=2;
     }
     public void speedDown(){
-        if (speed > 0) speed--;
+        if (speed > 0) speed-=2;
     }
     public void changeDirection(double heading){
         this.heading += heading;
