@@ -115,11 +115,14 @@ class GameWorld{
 
     public void tick() {
         helicopter.move();
-        if (river.checkDrain(helicopter.getCenter()) && drain){
+        if (helicopter.getSpeed() > 2){
+            drain = false;
+        } else if (river.checkDrain(helicopter.getCenter()) && drain){
             helicopter.drainWater();
         } else {
             drain = false;
         }
+
         for(Fire fire : fires){
             if (fire.checkSize()){
                 deadFires.add(fire);
@@ -236,8 +239,8 @@ class Fire{
     //todo pass water, return to reduce water
     public int shrink(Point heli, int water, int speed){
         boolean close = false; //detects if the helicopter is close to a small fire
-        if (size < 30 && (Math.abs(heli.getX() - location.getX()) < 20 ||
-                (Math.abs(heli.getY()) - location.getY()) < 20)){
+        if (size < 40 && (Math.abs(heli.getX() - location.getX()) < 40 ||
+                (Math.abs(heli.getY()) - location.getY()) < 40)){
             close = true;
         }
         if (speed <= 2 && (location.getX() < heli.getX() && location.getX()+size > heli.getX()
@@ -245,11 +248,11 @@ class Fire{
             int shrinkFactor = water/10;
             if (size > shrinkFactor) {
                 size -= shrinkFactor;
+                location.setX(location.getX()+shrinkFactor/2); //keeps it centered
+                location.setY(location.getY()+shrinkFactor/2);
             } else {
                 size = 0;
             }
-            location.setX(location.getX()+shrinkFactor/2); //keeps it centered
-            location.setY(location.getY()+shrinkFactor/2);
             return 0;
         } else {
             return water;
@@ -257,7 +260,7 @@ class Fire{
     }
 
     public boolean checkSize(){
-        if (size == 0){
+        if (size <= 0){
             return true;
         } else {
             return false;
@@ -266,9 +269,11 @@ class Fire{
     public Point getLocation() {return location;}
 
     void draw(Graphics g){
-        g.setColor(ColorUtil.MAGENTA);
-        g.fillArc(location.getX(),location.getY(),size,size,0,360);
-        g.drawString(""+size,location.getX()+size,location.getY()+size);
+        if (size > 0) {
+            g.setColor(ColorUtil.MAGENTA);
+            g.fillArc(location.getX(), location.getY(), size, size, 0, 360);
+            g.drawString(""+size,location.getX()+size,location.getY()+size);
+        }
     }
 }
 class Helicopter{
