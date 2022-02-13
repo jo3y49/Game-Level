@@ -94,7 +94,7 @@ class GameWorld{
         Fire fire3 = new Fire(new Point(new Random().nextInt(fVarX)+
                 Display.getInstance().getDisplayWidth()/3+Display.getInstance().getDisplayWidth()/30,
                 new Random().nextInt(fVarY)+
-                        Display.getInstance().getDisplayHeight()/3));
+                        (Display.getInstance().getDisplayHeight()*2)/5));
         fires.add(fire1); fires.add(fire2); fires.add(fire3);
         helicopter = new Helicopter(helipad.getCenter());
         helicopter.setFuel(30000);
@@ -220,16 +220,18 @@ class Helipad{
 }
 class Fire{
     private Point location;
-    private int size, growth;
+    private int size, maxSize, tooSmall, growth;
 
     public Fire(Point location){
         this.location = location;
-        size = new Random().nextInt(100)+300;
-        growth = 6;
+        maxSize = (Display.getInstance().getDisplayHeight()+Display.getInstance().getDisplayWidth())/9;
+        size = new Random().nextInt(maxSize/5)+(maxSize*4)/5;
+        growth = maxSize/70;
+        tooSmall = growth * 10;
     }
     public void grow(){
         if (size > 0) {
-            if (new Random().nextInt(30) == 0) {
+            if (new Random().nextInt(40) == 0) {
                 size += growth;
                 location.setX(location.getX() - growth / 2); //keeps it centered
                 location.setY(location.getY() - growth / 2);
@@ -239,13 +241,13 @@ class Fire{
     //todo pass water, return to reduce water
     public int shrink(Point heli, int water, int speed){
         boolean close = false; //detects if the helicopter is close to a small fire
-        if (size < 40 && (Math.abs(heli.getX() - location.getX()) < 40 ||
-                (Math.abs(heli.getY()) - location.getY()) < 40)){
+        if (size <= tooSmall && (Math.abs(heli.getX() - location.getX()) <= tooSmall/2 ||
+                (Math.abs(heli.getY()) - location.getY()) < tooSmall/2)){
             close = true;
         }
         if (speed <= 2 && (location.getX() < heli.getX() && location.getX()+size > heli.getX()
         && location.getY() < heli.getY() && location.getY()+size > heli.getY() || close)){
-            int shrinkFactor = water/10;
+            int shrinkFactor = (water*growth)/100;
             if (size > shrinkFactor) {
                 size -= shrinkFactor;
                 location.setX(location.getX()+shrinkFactor/2); //keeps it centered
@@ -327,10 +329,10 @@ class Helicopter{
     }
 
     public void speedUp(){
-        if (speed < maxSpeed) speed+=2;
+        if (speed < maxSpeed) speed++;
     }
     public void speedDown(){
-        if (speed > 0) speed-=2;
+        if (speed > 0) speed--;
     }
     public void changeDirection(double heading){
         this.heading += heading;
