@@ -154,6 +154,7 @@ class GameWorld{
         for (Fire fire : fires) {
             helicopter.fireWater(fire.shrink(helicopter.getHose(), helicopter.getWater(), helicopter.getSpeed()));
         }
+        drain = false;
     }
 
     public void drain(){
@@ -234,15 +235,16 @@ class Fire{
     }
     //todo pass water, return to reduce water
     public int shrink(Point heli, int water, int speed){
+        int shrinkFactor = water/10;
         if (water > 0 && speed <= 2 && location.getX() < heli.getX() && location.getX()+size > heli.getX()
         && location.getY() < heli.getY() && location.getY()+size > heli.getY()){
-            if (size > water/4) {
-                size -= water/4;
+            if (size > shrinkFactor) {
+                size -= shrinkFactor;
             } else {
                 size = 0;
             }
-            location.setX(location.getX()+water/8); //keeps it centered
-            location.setY(location.getY()+water/8);
+            location.setX(location.getX()+shrinkFactor/2); //keeps it centered
+            location.setY(location.getY()+shrinkFactor/2);
             return 0;
         } else {
             return water;
