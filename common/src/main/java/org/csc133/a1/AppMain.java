@@ -85,18 +85,18 @@ class GameWorld{
         helipad = new Helipad();
         fires = new ArrayList<>();
         deadFires = new ArrayList<>();
-        int fVarX = Display.getInstance().getDisplayWidth()/15;
-        int fVarY = Display.getInstance().getDisplayHeight()/15;
+        int fVarX = Game.DISP_W/15;
+        int fVarY = Game.DISP_H/15;
         Fire fire1 = new Fire(new Point(new Random().nextInt(fVarX)+fVarX,
                   new Random().nextInt(fVarY)+fVarY));
         Fire fire2 = new Fire(new Point(new Random().nextInt(fVarX)+
-                Display.getInstance().getDisplayWidth()/2+
-                Display.getInstance().getDisplayWidth()/10,
+                Game.DISP_W/2+
+                Game.DISP_W/10,
                   new Random().nextInt(fVarY)+fVarY));
         Fire fire3 = new Fire(new Point(new Random().nextInt(fVarX)+
-                Display.getInstance().getDisplayWidth()/3+Display.getInstance()
+                Game.DISP_W/3+Display.getInstance()
                 .getDisplayWidth()/30,new Random().nextInt(fVarY)+
-                (Display.getInstance().getDisplayHeight()*2)/5));
+                (Game.DISP_H*2)/5));
         fires.add(fire1); fires.add(fire2); fires.add(fire3);
         helicopter = new Helicopter(helipad.getCenter());
         helicopter.setFuel(30000);
@@ -170,10 +170,10 @@ class River{
     private int height, width;
 
     public River(){
-        location = new Point(Display.getInstance().getDisplayWidth()/100,
-                             Display.getInstance().getDisplayHeight()/3);
-        height = Display.getInstance().getDisplayHeight()/12;
-        width = Display.getInstance().getDisplayWidth()-location.getX()*2;
+        location = new Point(Game.DISP_W/100,
+                             Game.DISP_H/3);
+        height = Game.DISP_H/12;
+        width = Game.DISP_W-location.getX()*2;
     }
 
     public boolean checkDrain(Point heli){
@@ -199,10 +199,10 @@ class Helipad{
     private int square, circle;
 
     public Helipad(){
-        locationS = new Point(Display.getInstance().getDisplayWidth()/2-
-            Display.getInstance().getDisplayWidth()/20,Display.getInstance()
-            .getDisplayHeight()- Display.getInstance().getDisplayHeight()/5);
-        square = Display.getInstance().getDisplayWidth()-locationS.getX()*2;
+        locationS = new Point(Game.DISP_W/2-
+            Game.DISP_W/20,Display.getInstance()
+            .getDisplayHeight()- Game.DISP_H/5);
+        square = Game.DISP_W-locationS.getX()*2;
         circle = square-square/5;
         locationC = new Point(locationS.getX()+square/10,
                               locationS.getY()+square/10);
@@ -228,8 +228,8 @@ class Fire{
 
     public Fire(Point location){
         this.location = location;
-        maxSize = (Display.getInstance().getDisplayHeight()+
-                   Display.getInstance().getDisplayWidth())/9;
+        maxSize = (Game.DISP_H+
+                   Game.DISP_W)/9;
         size = new Random().nextInt(maxSize/5)+(maxSize*4)/5;
         radius = (double)size/2;
         center = new Point(this.location.getX()+size/2,this.location.getY()+size/2);
@@ -300,7 +300,7 @@ class Helicopter{
         maxSpeed = 10;
         maxWater = 1000;
         heading = 0.0;
-        size = Display.getInstance().getDisplayWidth()/40;
+        size = Game.DISP_W/40;
         init = new Point(helipad.getX()-size/2,helipad.getY()-size/3);
         length = size*2;
         location = init;
@@ -354,8 +354,8 @@ class Helicopter{
             location.setX(size / 2);
             center.setX(location.getX()+size/2);
             lineEnd.setX((int) (length * Math.sin(heading)) + center.getX());
-        } else if (location.getX() + size > Display.getInstance().getDisplayWidth()){
-            location.setX(Display.getInstance().getDisplayWidth() - size);
+        } else if (location.getX() + size > Game.DISP_W){
+            location.setX(Game.DISP_W - size);
             center.setX(location.getX()+size/2);
             lineEnd.setX((int) (length * Math.sin(heading)) + center.getX());
         } else {
@@ -369,8 +369,8 @@ class Helicopter{
             location.setY(size / 4);
             center.setY(location.getY()+size/2);
             lineEnd.setY((int) (length * (-Math.cos(heading))) + center.getY());
-        } else if (location.getY() + size > Display.getInstance().getDisplayHeight()) {
-            location.setY(Display.getInstance().getDisplayHeight() - size);
+        } else if (location.getY() + size > Game.DISP_H) {
+            location.setY(Game.DISP_H - size);
             center.setY(location.getY()+size/2);
             lineEnd.setY((int) (length * (-Math.cos(heading))) + center.getY());
         } else {
