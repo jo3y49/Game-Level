@@ -37,8 +37,8 @@ class Game extends Form implements Runnable{ // displays output
     final static int DISP_H = Display.getInstance().getDisplayHeight();
     final static int DISP_W = Display.getInstance().getDisplayWidth();
 
-    public static int getSmallDim() {return Math.min(DISP_H,DISP_W);}
-    public static int getLargeDim() {return Math.max(DISP_H,DISP_W);}
+    public static int getSmallDim() { return Math.min(DISP_H,DISP_W); }
+    public static int getLargeDim() { return Math.max(DISP_H,DISP_W); }
 
     public Game(){
         gw = new GameWorld();
@@ -77,9 +77,7 @@ class GameWorld {
     private ArrayList<Fire> deadFires;
     private Helicopter helicopter;
 
-    public GameWorld() {
-        init();
-    }
+    public GameWorld() { init(); }
 
     private void init() {
         river = new River();
@@ -89,14 +87,13 @@ class GameWorld {
         int fVarX = Game.DISP_W / 15;
         int fVarY = Game.DISP_H / 15;
         Fire fire1 = new Fire(new Point(new Random().nextInt(fVarX) + fVarX,
-                new Random().nextInt(fVarY) + fVarY));
+                  new Random().nextInt(fVarY) + fVarY));
         Fire fire2 = new Fire(new Point(new Random().nextInt(fVarX) +
-                Game.DISP_W / 2 +
-                Game.DISP_W / 10,
-                new Random().nextInt(fVarY) + fVarY));
+                     Game.DISP_W / 2 + Game.DISP_W / 10,
+                  new Random().nextInt(fVarY) + fVarY));
         Fire fire3 = new Fire(new Point(new Random().nextInt(fVarX) +
-                Game.DISP_W / 3 + Game.DISP_W / 30, new Random().nextInt(fVarY) +
-                (Game.DISP_H * 2) / 5));
+                     Game.DISP_W / 3 + Game.DISP_W / 30,
+                  new Random().nextInt(fVarY) + (Game.DISP_H * 2) / 5));
         fires.add(fire1);
         fires.add(fire2);
         fires.add(fire3);
@@ -108,15 +105,15 @@ class GameWorld {
     }
 
     public void lose(){
-        if(Dialog.show("Confirm","You Lose","Exit","Replay")){
+        if(Dialog.show("Confirm","You ran out of fuel","Quit","Play Again")){
             quit();
         } else {
             init();
         }
     }
     public void win(){
-        if(Dialog.show("Confirm","You Win, your final score is " +
-                helicopter.getFuel(),"Exit","Replay")){
+        if(Dialog.show("Confirm","You Won! your final score is " +
+                helicopter.getFuel(),"Quit","Play Again")){
             quit();
         } else {
             init();
@@ -272,7 +269,7 @@ class Fire{
     }
 
     public void shrink(int water){
-        int shrinkFactor = (water*growth)/80;
+        int shrinkFactor = (water*growth)/50;
         if (size > shrinkFactor) {
             size -= shrinkFactor;
             location.setX(location.getX()+shrinkFactor/2); //keeps it centered
@@ -354,7 +351,7 @@ class Helicopter{
                 (int) (length * -Math.cos(heading)) + center.getY());
     }
     public void move(){
-        if (location.getX() < 0) {
+        if (location.getX() < 0) {//prevents helicopter from going out of bounds
             location.setX(size / 2);
             center.setX(location.getX()+size/2);
             lineEnd.setX((int) (length * Math.sin(heading)) + center.getX());
@@ -387,9 +384,9 @@ class Helicopter{
 
     public boolean fight(Point fire, int fireSize){
         return (dist(fire,center) < fireSize/2) || (size > fireSize &&
-                (location.getX() < fire.getX() + fireSize && location.getX() + size >
-                fire.getX() && location.getY() < fire.getY() + fireSize &&
-                location.getY() + size > fire.getY()));
+                (location.getX() - fireSize < fire.getX() + fireSize && location.getX() + size >
+                fire.getX() - fireSize && location.getY() - fireSize < fire.getY() + fireSize &&
+                location.getY() + size > fire.getY() - fireSize));
     }
 
     void draw(Graphics g){
@@ -398,7 +395,7 @@ class Helicopter{
         g.drawLine(center.getX(),center.getY(),lineEnd.getX(),lineEnd.getY());
 
         g.drawString("F  : "+fuel,location.getX()+size/2,location.getY()+size*2);
-        g.drawString("W  : "+water,location.getX()+size/2,location.getY()+size*3);
+        g.drawString("W : "+water,location.getX()+size/2,location.getY()+size*3);
     }
     private int dist(Point a, Point b){
         return (int) Math.sqrt((b.getX()-a.getX())*(b.getX()-a.getX())+
