@@ -32,7 +32,7 @@ public class AppMain extends Lifecycle {
         new Game();
     }
 }
-class Game extends Form implements Runnable{ // displays output
+class Game extends Form implements Runnable{
     GameWorld gw;
 
     final static int DISP_H = Display.getInstance().getDisplayHeight();
@@ -49,7 +49,7 @@ class Game extends Form implements Runnable{ // displays output
         addKeyListener(-91,(evt) -> gw.speedUp()); //up
         addKeyListener(-92,(evt) -> gw.speedDown()); //down
         addKeyListener('f',(evt) -> gw.checkFire());
-        addKeyListener('d',(evt) -> gw.drain());
+        addKeyListener('d',(evt) -> gw.checkWater());
         addKeyListener('Q',(evt) -> gw.quit());
 
         UITimer timer = new UITimer(this);
@@ -71,7 +71,6 @@ class Game extends Form implements Runnable{ // displays output
 class GameWorld {
     final int HELICOPTER_FUEL = 25000;
 
-    private boolean drain = false;
     private River river;
     private Helipad helipad;
     private ArrayList<Fire> fires;
@@ -86,19 +85,20 @@ class GameWorld {
         fires = new ArrayList<>();
         deadFires = new ArrayList<>();
 
-        int fVarX = Game.DISP_W / 15;
-        int fVarY = Game.DISP_H / 15;
+        int fireVariationX = Game.DISP_W / 15;
+        int fireVariationY = Game.DISP_H / 15;
 
-        Fire fire1 = new Fire(new Point(new Random().nextInt(fVarX) + fVarX,
-                  new Random().nextInt(fVarY) + fVarY));
+        Fire fire1 = new Fire(new Point(new Random().nextInt(fireVariationX)
+                                          + fireVariationX,
+                  new Random().nextInt(fireVariationY) + fireVariationY));
 
-        Fire fire2 = new Fire(new Point(new Random().nextInt(fVarX) +
+        Fire fire2 = new Fire(new Point(new Random().nextInt(fireVariationX) +
                      Game.DISP_W / 2 + Game.DISP_W / 10,
-                  new Random().nextInt(fVarY) + fVarY));
+                  new Random().nextInt(fireVariationY) + fireVariationY));
 
-        Fire fire3 = new Fire(new Point(new Random().nextInt(fVarX) +
+        Fire fire3 = new Fire(new Point(new Random().nextInt(fireVariationX) +
                      Game.DISP_W / 3 + Game.DISP_W / 30,
-                  new Random().nextInt(fVarY) + (Game.DISP_H * 2) / 5));
+                  new Random().nextInt(fireVariationY)+(Game.DISP_H * 2) / 5));
 
         fires.add(fire1); fires.add(fire2); fires.add(fire3);
 
@@ -134,16 +134,11 @@ class GameWorld {
         helicopter.draw(g);
     }
     public void tick() {
-        helicopter.move();
-
-        if (river.checkDrain(helicopter.getCenter().getY()) &&
-                drain && helicopter.getSpeed() <= 2){
-            helicopter.drainWater();
-        }
-        drain = false;
+        helicopter.moveX();
+        helicopter.moveY();
 
         for (Fire fire : fires) {
-            if (fire.checkEmpty()) {
+            if (fire.checkPutOut()) {
                 deadFires.add(fire);
             }
             fire.grow();
@@ -168,14 +163,22 @@ class GameWorld {
     public void checkFire() {
         for (Fire fire : fires) {
             if (helicopter.getWater() > 0 && helicopter.getSpeed() <= 2 &&
-                    helicopter.fight(fire.getCenter(),fire.getSize())) {
+                    helicopter.fightFire(fire.getCenter(),fire.getSize())) {
                 fire.shrink(helicopter.getWater());
                 break;
             }
         }
-        helicopter.fireWater();
+        helicopter.shootWater();
     }
-    public void drain() { drain = true; }
+    public void checkWater(){
+        if (river.checkDrain(helicopter.getCenter().getY()) && helicopter.getSpeed() <= 2){
+            helicopter.drainWater();
+        }
+    }
+    public static double distance(Point a, Point b){
+        return Math.sqrt((b.getX()-a.getX())*(b.getX()-a.getX())+
+                (b.getY()-a.getY())*(b.getY()-a.getY()));
+    }
 }
 class River{
     private Point location;
@@ -212,16 +215,13 @@ class Helipad{
     }
     public Point getCenter(){ return center; }
 
-    public boolean checkLand(Point heli) { return dist(heli,center) < radius; }
-
-    void draw(Graphics g){
-        g.setColor(ColorUtil.GRAY);
-        g.drawRect(locationS.getX(),locationS.getY(),square,square,5);
-        g.drawArc(locationC.getX(),locationC.getY(),circle,circle,0,360);
+    public boolean checkLand(Point heli){
+        return GameWorld.distance(heli,center) < radius;
     }
-    private double dist(Point a, Point b){
-        return Math.sqrt((b.getX()-a.getX())*(b.getX()-a.getX())+
-                         (b.getY()-a.getY())*(b.getY()-a.getY()));
+    void draw(Graphics g) {
+        g.setColor(ColorUtil.GRAY);
+        g.drawRect(locationS.getX(), locationS.getY(), square, square, 5);
+        g.drawArc(locationC.getX(), locationC.getY(), circle, circle, 0, 360);
     }
 }
 class Fire{
@@ -240,6 +240,9 @@ class Fire{
     }
     public Point getCenter() { return center; }
     public int getSize() { return size; }
+
+    public boolean checkPutOut(){ return size <= 0; }
+
     public void grow() {
         if (size > 0) {
             if (new Random().nextInt(40) == 0) {
@@ -259,18 +262,17 @@ class Fire{
             size = 0;
         }
     }
-    public boolean checkEmpty(){ return size <= 0; }
-
     void draw(Graphics g){
         if (size > 0) {
             g.setColor(ColorUtil.MAGENTA);
             g.fillArc(location.getX(), location.getY(), size, size, 0, 360);
+
             g.drawString(""+size,location.getX()+size,location.getY()+size);
         }
     }
 }
 class Helicopter{
-    private Point init, location, center, lineEnd;
+    private Point location, center, lineTip;
     private int size, length, fuel, water, speed, maxSpeed, maxWater;
     private double heading;
 
@@ -278,10 +280,9 @@ class Helicopter{
         size = Game.DISP_W/40;
         length = size*2;
         heading = 0.0;
-        init = new Point(helipad.getX()-size/2,helipad.getY()-size/3);
-        location = init;
+        location = new Point(helipad.getX()-size/2,helipad.getY()-size/3);
         center = new Point(location.getX()+size/2,location.getY()+size/2);
-        lineEnd = new Point((int) (length * Math.sin(heading)) + center.getX(),
+        lineTip = new Point((int) (length * Math.sin(heading)) + center.getX(),
                   (int) (length * (-Math.cos(heading))) + center.getY());
         speed = 0;
         maxSpeed = 10;
@@ -300,70 +301,86 @@ class Helicopter{
             water += 100;
         }
     }
-    public void fireWater() { water = 0; }
+    public void shootWater() { water = 0; }
 
     public void speedUp() { if (speed < maxSpeed) speed++; }
     public void speedDown(){ if (speed > 0) speed--; }
 
     public void turnLeft(){
         heading -= Math.PI / 6.0;
-        lineEnd = new Point((int) (length * Math.sin(heading)) + center.getX(),
+        lineTip = new Point((int) (length * Math.sin(heading)) + center.getX(),
                   (int) (length * -Math.cos(heading)) + center.getY());
     }
     public void turnRight(){
         heading += Math.PI / 6.0;
-        lineEnd = new Point((int) (length * Math.sin(heading)) + center.getX(),
+        lineTip = new Point((int) (length * Math.sin(heading)) + center.getX(),
                   (int) (length * -Math.cos(heading)) + center.getY());
     }
-    public void move(){
-        if (location.getX() < 0){//prevents helicopter from going out of bounds
-            location.setX(size / 2);
-            center.setX(location.getX()+size/2);
-            lineEnd.setX((int) (length * Math.sin(heading)) + center.getX());
-        } else if (location.getX() + size > Game.DISP_W){
-            location.setX(Game.DISP_W - size);
-            center.setX(location.getX()+size/2);
-            lineEnd.setX((int) (length * Math.sin(heading)) + center.getX());
+    public void moveX(){
+        if (location.getX() < 0) {
+            blockLeft();
+        } else if (location.getX() + size > Game.DISP_W) {
+            blockRight();
         } else {
-            int movX = (((center.getX()-lineEnd.getX())/30)*speed);
-            location.setX(location.getX()-movX);
-            center.setX(center.getX()-movX);
-            lineEnd.setX(lineEnd.getX()-movX);
-        }
-        if (location.getY() < 0){
-            location.setY(size / 4);
-            center.setY(location.getY()+size/2);
-            lineEnd.setY((int) (length * (-Math.cos(heading)))+center.getY());
-        } else if (location.getY() + size > Game.DISP_H){
-            location.setY(Game.DISP_H - size);
-            center.setY(location.getY()+size/2);
-            lineEnd.setY((int) (length * (-Math.cos(heading)))+center.getY());
-        } else {
-            int movY = (((center.getY() - lineEnd.getY())/30)*speed);
-            location.setY(location.getY() - movY);
-            center.setY(center.getY() - movY);
-            lineEnd.setY(lineEnd.getY() - movY);
+            changeX();
         }
     }
-    public boolean fight(Point fire, int fireSize){
-        return (dist(fire,center) < fireSize/2) || (size > fireSize &&
-               (location.getX() - fireSize < fire.getX() + fireSize &&
-                location.getX() + size > fire.getX() - fireSize &&
+    public void moveY(){
+        if (location.getY() < 0){
+            blockUp();
+        } else if (location.getY() + size > Game.DISP_H){
+            blockDown();
+        } else {
+            changeY();
+        }
+    }
+    private void blockLeft(){
+        location.setX(size / 2);
+        center.setX(location.getX() + size / 2);
+        lineTip.setX((int) (length * Math.sin(heading)) + center.getX());
+    }
+    private void blockRight(){
+        location.setX(Game.DISP_W - size);
+        center.setX(location.getX() + size / 2);
+        lineTip.setX((int) (length * Math.sin(heading)) + center.getX());
+    }
+    private void changeX(){
+        int movX = (((center.getX() - lineTip.getX()) / 30) * speed);
+        location.setX(location.getX() - movX);
+        center.setX(center.getX() - movX);
+        lineTip.setX(lineTip.getX() - movX);
+    }
+    private void blockUp(){
+        location.setY(size / 4);
+        center.setY(location.getY()+size/2);
+        lineTip.setY((int) (length * (-Math.cos(heading)))+center.getY());
+    }
+    private void blockDown(){
+        location.setY(Game.DISP_H - size);
+        center.setY(location.getY()+size/2);
+        lineTip.setY((int) (length * (-Math.cos(heading)))+center.getY());
+    }
+    private void changeY(){
+        int movY = (((center.getY() - lineTip.getY())/30)*speed);
+        location.setY(location.getY() - movY);
+        center.setY(center.getY() - movY);
+        lineTip.setY(lineTip.getY() - movY);
+    }
+    public boolean fightFire(Point fire, int fireSize){
+        return ((int)GameWorld.distance(fire, center) < fireSize/2) ||
+                (size > fireSize && (location.getX() - fireSize < fire.getX() +
+                fireSize && location.getX() + size > fire.getX() - fireSize &&
                 location.getY() - fireSize < fire.getY() + fireSize &&
                 location.getY() + size > fire.getY() - fireSize));
     }
     void draw(Graphics g){
         g.setColor(ColorUtil.YELLOW);
         g.fillArc(location.getX(),location.getY(),size,size,0,360);
-        g.drawLine(center.getX(),center.getY(),lineEnd.getX(),lineEnd.getY());
+        g.drawLine(center.getX(),center.getY(),lineTip.getX(),lineTip.getY());
 
         g.drawString("F  : "+fuel,location.getX()+size/2,
                                       location.getY()+size*2);
         g.drawString("W : "+water,location.getX()+size/2,
                                       location.getY()+size*3);
-    }
-    private int dist(Point a, Point b){
-        return (int) Math.sqrt((b.getX()-a.getX())*(b.getX()-a.getX())+
-                               (b.getY()-a.getY())*(b.getY()-a.getY()));
     }
 }
