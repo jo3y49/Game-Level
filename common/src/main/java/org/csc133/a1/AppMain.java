@@ -107,6 +107,22 @@ class GameWorld {
         Display.getInstance().exitApplication();
     }
 
+    public void lose(){
+        if(Dialog.show("Confirm","You Lose","Exit","Replay")){
+            quit();
+        } else {
+            init();
+        }
+    }
+    public void win(){
+        if(Dialog.show("Confirm","You Win, your final score is " +
+                helicopter.getFuel(),"Exit","Replay")){
+            quit();
+        } else {
+            init();
+        }
+    }
+
     void draw(Graphics g) {
         g.setFont(Font.createSystemFont(FACE_MONOSPACE, STYLE_BOLD,
                 SIZE_LARGE));
@@ -123,10 +139,8 @@ class GameWorld {
         helicopter.move();
         if (river.checkDrain(helicopter.getCenter().getY()) && drain && helicopter.getSpeed() <= 2) {
             helicopter.drainWater(); //todo one press or multiple press?
-        } else {
-            drain = false;
         }
-
+            drain = false;
         for (Fire fire : fires) {
             if (fire.checkEmpty()) {
                 deadFires.add(fire);
@@ -135,15 +149,13 @@ class GameWorld {
         }
         fires.removeAll(deadFires);
         helicopter.drainFuel(5);
-        /*if (helipad.checkLand(helicopter.getCenter()) && helicopter.getSpeed() <= 0 && fires.size() <= 0){
-            int score = helicopter.getFuel();
-            invoke init() on play again
-            invoke quit() on exit
-            //todo win screen
+        if (helipad.checkLand(helicopter.getCenter()) && helicopter.getSpeed() <= 0 && fires.size() <= 0){
+            win();
         }
         if (helicopter.getFuel() <= 0) {
-            //todo lose screen
-        }*/
+            lose();
+        }
+
     }
 
     public void speedUp() {
@@ -169,7 +181,6 @@ class GameWorld {
                 break;
             }
         }
-        drain = false;
         helicopter.fireWater();
     }
 
@@ -352,7 +363,7 @@ class Helicopter{
             center.setX(location.getX()+size/2);
             lineEnd.setX((int) (length * Math.sin(heading)) + center.getX());
         } else {
-            int movX = (((center.getX()-lineEnd.getX())/40)*speed);
+            int movX = (((center.getX()-lineEnd.getX())/30)*speed);
             location.setX(location.getX()-movX);
             center.setX(center.getX()-movX);
             lineEnd.setX(lineEnd.getX()-movX);
@@ -367,7 +378,7 @@ class Helicopter{
             center.setY(location.getY()+size/2);
             lineEnd.setY((int) (length * (-Math.cos(heading))) + center.getY());
         } else {
-            int movY = (((center.getY() - lineEnd.getY()) / 40) * speed);
+            int movY = (((center.getY() - lineEnd.getY()) / 30) * speed);
             location.setY(location.getY() - movY);
             center.setY(center.getY() - movY);
             lineEnd.setY(lineEnd.getY() - movY);
