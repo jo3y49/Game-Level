@@ -43,10 +43,10 @@ class Game extends Form implements Runnable{
     public Game(){
         gw = new GameWorld();
 
-        addKeyListener(-93,(evt) -> gw.move('l')); //left
-        addKeyListener(-94,(evt) -> gw.move('r')); //right
-        addKeyListener(-91,(evt) -> gw.move('u')); //up
-        addKeyListener(-92,(evt) -> gw.move('d')); //down
+        addKeyListener(-93,(evt) -> gw.turnLeft()); //left
+        addKeyListener(-94,(evt) -> gw.turnRight()); //right
+        addKeyListener(-91,(evt) -> gw.speedUp()); //up
+        addKeyListener(-92,(evt) -> gw.speedDown()); //down
         addKeyListener('f',(evt) -> gw.checkFire());
         addKeyListener('d',(evt) -> gw.drain());
         addKeyListener('Q',(evt) -> gw.quit());
@@ -138,21 +138,18 @@ class GameWorld{
 
         }
     }
-    public void move(char c){
-        switch (c) {
-            case 'u':
-                helicopter.speedUp();
-            break;
-            case 'd':
-                helicopter.speedDown();
-            break;
-            case 'l':
-                helicopter.changeDirection(-Math.PI/6.0);
-            break;
-            case 'r':
-                helicopter.changeDirection(Math.PI/6.0);
-            break;
-        }
+
+    public void speedUp(){
+        helicopter.speedUp();
+    }
+    public void speedDown(){
+        helicopter.speedDown();
+    }
+    public void turnLeft(){
+        helicopter.changeDirection(-Math.PI/6.0);
+    }
+    public void turnRight(){
+        helicopter.changeDirection(Math.PI/6.0);
     }
     public void checkFire() {
         for (Fire fire : fires) {
